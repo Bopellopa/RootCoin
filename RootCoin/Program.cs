@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
+using EllipticCurve;
 
 namespace RootCoin
 {
@@ -11,75 +12,43 @@ namespace RootCoin
     {
         static void Main(string[] args)
         {
-            Blockchain rootcoin = new Blockchain();
+            PrivateKey key1 = new PrivateKey();
+            PublicKey wallet1 = key1.publicKey();
 
-            rootcoin.AddBlock(new Block(1, DateTime.Now.ToString("yyyyMMddHHmmssffff"), "amount: 50", ""));
-            rootcoin.AddBlock(new Block(2, DateTime.Now.ToString("yyyyMMddHHmmssffff"), "amount: 200", ""));
+            PrivateKey key2 = new PrivateKey();
+            PublicKey wallet2 = key2.publicKey();
+
+            Blockchain rootcoin = new Blockchain(2, 100);
+
+            Console.WriteLine("Start the Miner.");
+            rootcoin.MinePendingTransactions(wallet1);
+            Console.WriteLine("\nBalance of Wallet1 is $" + rootcoin.GetBalanceOfWallet(wallet1).ToString());
+
+            Transaction tx1 = new Transaction(wallet1, wallet2, 10);
+            tx1.SignTransaction(key1);
+            rootcoin.addPendingTransaction(tx1);
+            Console.WriteLine("Start the Miner.");
+            rootcoin.MinePendingTransactions(wallet2);
+            Console.WriteLine("\nBalance of Wallet1 is $" + rootcoin.GetBalanceOfWallet(wallet1).ToString());
+            Console.WriteLine("\nBalance of Wallet2 is $" + rootcoin.GetBalanceOfWallet(wallet2).ToString());
+
+
             string blockJSON = JsonConvert.SerializeObject(rootcoin, Formatting.Indented);
             Console.WriteLine(blockJSON);
-        }
-    }
 
-    class Blockchain
-    {
-        public List<Block> Chain { get; set; }
-        public Blockchain()
-        {
-            this.Chain = new List<Block>();
-            this.Chain.Add(CreateGenesisBlock());
-        }
-        public Block CreateGenesisBlock()
-        {
-            return new Block(0, DateTime.Now.ToString("yyyyMMddHHmmssffff"), "GENISIS BLOCK");
-        }
+            //rootcoin.GetLatestBlock().PreviousHash = "12345";
 
-        public Block GetLatestBlock()
-        {
-            return this.Chain.Last();
-        }
-        public void AddBlock(Block newBlock)
-        {
-            newBlock.PreviousHash = this.GetLatestBlock().Hash;
-            newBlock.Hash = newBlock.CalculateHash();
-            this.Chain.Add(newBlock);
-        }
-        public bool IsChainValid()
-        {
-            for ( int i = 1; i<this.Chain.Count; i++)
+            if (rootcoin.IsChainValid())
             {
-                //check current hash = calc hash
-                Block currentBlock = this.Chain[i];
-                Block previousBlock = this.Chain[i - 1];
+                Console.WriteLine("Blockchain is Valid!!!");
             }
-        }
-    }
-
-    class Block
-    {
-        public int Index { get; set; }
-        public string PreviousHash { get; set; }
-        public string Timestamp { get; set; }
-        public string Data { get; set; }
-        public string Hash { get; set; }
-
-        public Block(int index, string timestamp, string data, string previousHash = "")
-        {
-            this.Index = index;
-            this.Timestamp = timestamp;
-            this.Data = data;
-            this.PreviousHash = previousHash;
-            this.Hash = CalculateHash();
-
-        }
-
-        public string CalculateHash()
-        {
-            string blockData = this.Index + this.PreviousHash + this.Timestamp + this.Data;
-            byte[] blockBytes = Encoding.ASCII.GetBytes(blockData);
-            byte[] hashBytes = SHA256.Create().ComputeHash(blockBytes);
-            return BitConverter.ToString(hashBytes).Replace("-", "");
+            else
+            {
+                Console.WriteLine("Blockchain is NOT Valid!");
+            }
         }
     }
 }
 
-
+  
+    
