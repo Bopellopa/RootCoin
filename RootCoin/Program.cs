@@ -11,15 +11,47 @@ namespace RootCoin
     {
         static void Main(string[] args)
         {
-            Block newblock = new Block(1, DateTime.Now.ToString("yyyyMMddHHmmssffff"), "amount: 50", "");
-            string blockJSON = JsonConvert.SerializeObject(newblock, Formatting.Indented);
+            Blockchain rootcoin = new Blockchain();
+
+            rootcoin.AddBlock(new Block(1, DateTime.Now.ToString("yyyyMMddHHmmssffff"), "amount: 50", ""));
+            rootcoin.AddBlock(new Block(2, DateTime.Now.ToString("yyyyMMddHHmmssffff"), "amount: 200", ""));
+            string blockJSON = JsonConvert.SerializeObject(rootcoin, Formatting.Indented);
             Console.WriteLine(blockJSON);
         }
     }
 
     class Blockchain
     {
+        public List<Block> Chain { get; set; }
+        public Blockchain()
+        {
+            this.Chain = new List<Block>();
+            this.Chain.Add(CreateGenesisBlock());
+        }
+        public Block CreateGenesisBlock()
+        {
+            return new Block(0, DateTime.Now.ToString("yyyyMMddHHmmssffff"), "GENISIS BLOCK");
+        }
 
+        public Block GetLatestBlock()
+        {
+            return this.Chain.Last();
+        }
+        public void AddBlock(Block newBlock)
+        {
+            newBlock.PreviousHash = this.GetLatestBlock().Hash;
+            newBlock.Hash = newBlock.CalculateHash();
+            this.Chain.Add(newBlock);
+        }
+        public bool IsChainValid()
+        {
+            for ( int i = 1; i<this.Chain.Count; i++)
+            {
+                //check current hash = calc hash
+                Block currentBlock = this.Chain[i];
+                Block previousBlock = this.Chain[i - 1];
+            }
+        }
     }
 
     class Block
@@ -36,6 +68,7 @@ namespace RootCoin
             this.Timestamp = timestamp;
             this.Data = data;
             this.PreviousHash = previousHash;
+            this.Hash = CalculateHash();
 
         }
 
