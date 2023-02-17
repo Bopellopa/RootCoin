@@ -45,7 +45,7 @@ namespace RootCoin
             {
                 this.Nonce++;
                 this.Hash = this.CalculateHash();
-                Console.WriteLine("Mining: " + this.Hash);
+                //Console.WriteLine("Mining: " + this.Hash);
             }
             Console.WriteLine("Block has been mined: " + this.Hash);
         }

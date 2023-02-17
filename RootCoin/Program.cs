@@ -18,7 +18,7 @@ namespace RootCoin
             PrivateKey key2 = new PrivateKey();
             PublicKey wallet2 = key2.publicKey();
 
-            Blockchain rootcoin = new Blockchain(2, 100);
+            Blockchain rootcoin = new Blockchain(3, 100);
 
             Console.WriteLine("Start the Miner.");
             rootcoin.MinePendingTransactions(wallet1);
